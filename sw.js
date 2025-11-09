@@ -1,4 +1,4 @@
-const CACHE = "pastel-hobby-v2";
+const CACHE = "pastel-hobby-v3";
 const ASSETS = ["./","./index.html","./app.js","./manifest.webmanifest"];
 
 self.addEventListener("install", (e) => {
