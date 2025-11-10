@@ -1,3 +1,4 @@
+
 <!doctype html>
 <html lang="en">
 <head>
@@ -7,10 +8,6 @@
 
   <!-- Tailwind -->
   <script src="https://cdn.tailwindcss.com"></script>
-
-  <!-- PWA (ok to keep) -->
-  <link rel="manifest" href="manifest.webmanifest" />
-  <meta name="theme-color" content="#fce7f3" />
 
   <style>
     @keyframes floaty { 0%{transform:translateY(0)} 50%{transform:translateY(-4px)} 100%{transform:translateY(0)} }
@@ -29,14 +26,31 @@
 <body class="min-h-screen bg-pink-50">
   <div id="app">Loading…</div>
 
-  <!-- React + Babel -->
-  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <!-- 🔥 Kill any old service workers + caches -->
+  <script>
+    (async () => {
+      if ('serviceWorker' in navigator) {
+        try {
+          const regs = await navigator.serviceWorker.getRegistrations();
+          for (const r of regs) await r.unregister();
+        } catch {}
+      }
+      if (window.caches) {
+        try {
+          const keys = await caches.keys();
+          await Promise.all(keys.map(k => caches.delete(k)));
+        } catch {}
+      }
+    })();
+  </script>
 
-  <!-- INLINE APP -->
+  <!-- React + Babel via jsDelivr -->
+  <script src="https://cdn.jsdelivr.net/npm/react@18/umd/react.production.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@babel/standalone/babel.min.js"></script>
+
+  <!-- INLINE APP (with debug) -->
   <script type="text/babel" data-presets="env,react">
-    /* ------- tiny debug so we can SEE problems ------- */
     const show = (msg) => {
       const el = document.getElementById('app');
       if (el) el.innerHTML = '<div style="padding:8px;color:#db2777">'+ msg +'</div>';
@@ -46,7 +60,6 @@
     try {
       const { useState, useRef, useEffect } = React;
 
-      /* Pixel icons */
       const PixelHeart=({className=''})=>{const d=[[5,3],[6,3],[9,3],[10,3],[4,4],[5,4],[6,4],[9,4],[10,4],[11,4],[3,5],[4,5],[5,5],[6,5],[9,5],[10,5],[11,5],[12,5],[3,6],[4,6],[5,6],[6,6],[9,6],[10,6],[11,6],[12,6],[4,7],[5,7],[6,7],[9,7],[10,7],[11,7],[5,8],[6,8],[9,8],[10,8],[6,9],[9,9],[7,10],[8,10]];return(<svg viewBox="0 0 16 16" className={className} shapeRendering="crispEdges"><rect width="16" height="16" fill="none"/>{d.map(([x,y],i)=>(<rect key={i} x={x} y={y} width="1" height="1"/>))}</svg>)};
       const PixelStar=({className=''})=>{const d=[[7,2],[8,2],[7,3],[8,3],[4,6],[5,6],[6,6],[7,6],[8,6],[9,6],[10,6],[11,6],[6,7],[7,7],[8,7],[9,7],[7,8],[8,8],[6,9],[7,9],[8,9],[9,9],[4,10],[5,10],[6,10],[7,10],[8,10],[9,10],[10,10],[11,10]];return(<svg viewBox="0 0 16 16" className={className} shapeRendering="crispEdges"><rect width="16" height="16" fill="none"/>{d.map(([x,y],i)=>(<rect key={i} x={x} y={y} width="1" height="1"/>))}</svg>)};
       const PixelFlower=({className=''})=>{const d=[[7,3],[8,3],[6,4],[7,4],[8,4],[9,4],[5,5],[6,5],[7,5],[8,5],[9,5],[10,5],[6,6],[7,6],[8,6],[9,6],[7,7],[8,7],[7,8],[8,8],[7,9],[8,9],[7,10],[8,10]];return(<svg viewBox="0 0 16 16" className={className} shapeRendering="crispEdges"><rect width="16" height="16" fill="none"/>{d.map(([x,y],i)=>(<rect key={i} x={x} y={y} width="1" height="1"/>))}</svg>)};
@@ -151,7 +164,7 @@
                   <PixelHeart className="w-6 h-6 pixel"/><PixelStar className="w-6 h-6 pixel"/><PixelFlower className="w-6 h-6 pixel"/>
                   <h1 className="text-2xl font-bold text-pink-600 ml-2">My Hobby Journal (Pastel ✧ Pixel)</h1>
                 </div>
-                <button onClick={install} className="px-3 py-1 text-xs bg-pink-500 text-white rounded-lg" style={{display: showInstall? 'block':'none'}}>Install App</button>
+                {showInstall && <button onClick={install} className="px-3 py-1 text-xs bg-pink-500 text-white rounded-lg">Install App</button>}
               </div>
               <div className="px-6 pt-4 pb-2 flex items-center gap-6 text-pink-600">
                 <NavBtn icon={<PixelTea/>} label="Home" to="home"/>
@@ -168,19 +181,13 @@
 
         const root = ReactDOM.createRoot(document.getElementById('app'));
         root.render(<App />);
-
-        show(''); // clear debug text after successful render
+        show('');
       } catch (err) {
         show('Error: ' + err.message);
         console.error(err);
       }
   </script>
 
-  <!-- Register service worker -->
-  <script>
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('./sw.js');
-    }
-  </script>
+  <!-- NOTE: service worker registration REMOVED on purpose -->
 </body>
 </html>
